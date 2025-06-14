@@ -45,6 +45,7 @@
     const TEST_TOKEN = "mytoken123";
 
     function saveToIndexedDB() {
+      document.getElementById("output").textContent = "⏳ Saving...";
       const request = indexedDB.open(DB_NAME, 1);
 
       request.onupgradeneeded = function(event) {
@@ -71,6 +72,7 @@
     }
 
     function readFromIndexedDB() {
+      document.getElementById("output").textContent = "⏳ Reading...";
       const request = indexedDB.open(DB_NAME, 1);
 
       request.onsuccess = function(event) {
@@ -99,6 +101,7 @@
     }
 
     function clearIndexedDB() {
+      document.getElementById("output").textContent = "⏳ Clearing...";
       const deleteRequest = indexedDB.deleteDatabase(DB_NAME);
       deleteRequest.onsuccess = () => {
         document.getElementById("output").textContent = "🗑️ All data cleared.";
