@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>GitHub Param & Cookie Check</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 40px;
+      background: #f5f5f5;
+      text-align: center;
+    }
+    .box {
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      display: inline-block;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    .info {
+      margin-top: 10px;
+      font-size: 18px;
+      color: #333;
+    }
+    .error {
+      color: red;
+      font-weight: bold;
+      margin-top: 20px;
+    }
+    button {
+      margin-top: 20px;
+      padding: 10px 20px;
+      font-size: 16px;
+      border-radius: 5px;
+      border: none;
+      background-color: #f44336;
+      color: white;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #d32f2f;
+    }
+  </style>
+</head>
+<body>
+  <div class="box">
+    <h2>🔍 Session Check</h2>
+    <div id="output" class="info">Checking for parameters and cookies...</div>
+    <button onclick="deleteCookies()">🗑️ Delete Cookies</button>
+  </div>
+
+  <script>
+    // Get URL parameters
+    function getParam(name) {
+      const urlParams = new URLSearchParams(window.location.search);
+      return urlParams.get(name);
+    }
+
+    // Get cookie
+    function getCookie(name) {
+      const value = `; ${document.cookie}`;
+      const parts = value.split(`; ${name}=`);
+      if (parts.length === 2) return decodeURIComponent(parts.pop().split(";").shift());
+      return null;
+    }
+
+    // Set cookie
+    function setCookie(name, value, days = 30) {
+      const expires = new Date(Date.now() + days * 864e5).toUTCString();
+      document.cookie = `${name}=${encodeURIComponent(value)}; expires=${expires}; path=/`;
+    }
+
+    // Delete cookie
+    function deleteCookie(name) {
+      document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/`;
+    }
+
+    function deleteCookies() {
+      deleteCookie("userId");
+      deleteCookie("token");
+      document.getElementById("output").innerHTML = "❌ Cookies deleted. Refresh to check again.";
+    }
+
+    const userIdParam = getParam("userId");
+    const tokenParam = getParam("token");
+    const output = document.getElementById("output");
+
+    if (userIdParam && tokenParam) {
+      setCookie("userId", userIdParam);
+      setCookie("token", tokenParam);
+      output.innerHTML = `
+        ✅ <strong>userId (from URL):</strong> ${userIdParam}<br>
+        ✅ <strong>token (from URL):</strong> ${tokenParam}<br>
+        💾 Saved to cookies.
+      `;
+    } else {
+      const userIdCookie = getCookie("userId");
+      const tokenCookie = getCookie("token");
+
+      if (userIdCookie && tokenCookie) {
+        output.innerHTML = `
+          ✅ <strong>userId (from cookie):</strong> ${userIdCookie}<br>
+          ✅ <strong>token (from cookie):</strong> ${tokenCookie}<br>
+          🔄 No URL parameters found; using saved session.
+        `;
+      } else {
+        output.innerHTML = `<span class="error">❌ No session info found in URL or cookies.</span>`;
+        //window.location.href = "https://script.google.com/macros/s/AKfycbyRsErJFE5hdMy5EKLrv7Uqk7YoEdjzlobZX-Hb61K_9CFHFplLeKNu7YBdkWIcx_En/exec"    
+      }
+    }
+  </script>
+</body>
+</html>
