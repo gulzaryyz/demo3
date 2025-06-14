@@ -2,7 +2,7 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>IndexedDB Test - Display Values</title>
+  <title>IndexedDB Test</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -14,28 +14,27 @@
       margin: 10px 5px;
       padding: 10px 20px;
       font-size: 16px;
-      cursor: pointer;
     }
     #output {
       margin-top: 20px;
       font-size: 16px;
       white-space: pre-wrap;
-      border: 1px solid #ccc;
+      background: #f9f9f9;
       padding: 10px;
-      background-color: #f9f9f9;
       border-radius: 5px;
+      border: 1px solid #ccc;
     }
   </style>
 </head>
 <body>
 
-  <h2>🔐 IndexedDB - Save and Read Example</h2>
+  <h2>📦 IndexedDB - Consistent Test</h2>
 
-  <button onclick="saveToIndexedDB()">✅ Save Values</button>
-  <button onclick="readFromIndexedDB()">📖 Read Values</button>
-  <button onclick="clearIndexedDB()">🗑️ Clear All</button>
+  <button onclick="saveToIndexedDB()">Save</button>
+  <button onclick="readFromIndexedDB()">Read</button>
+  <button onclick="clearIndexedDB()">Clear</button>
 
-  <div id="output">Click a button to begin...</div>
+  <div id="output">Ready</div>
 
   <script>
     const DB_NAME = "TestDB";
@@ -44,70 +43,71 @@
     const TEST_EMAIL = "gulzarali@gmail.com";
     const TEST_TOKEN = "mytoken123";
 
+    // Open IndexedDB connection (reusable)
+    function openDB() {
+      return new Promise((resolve, reject) => {
+        const request = indexedDB.open(DB_NAME, 1);
+        request.onupgradeneeded = event => {
+          const db = event.target.result;
+          db.createObjectStore(STORE_NAME);
+        };
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = () => reject("❌ Error opening IndexedDB.");
+      });
+    }
+
     function saveToIndexedDB() {
       document.getElementById("output").textContent = "⏳ Saving...";
-      const request = indexedDB.open(DB_NAME, 1);
-
-      request.onupgradeneeded = function(event) {
-        const db = event.target.result;
-        db.createObjectStore(STORE_NAME);
-      };
-
-      request.onsuccess = function(event) {
-        const db = event.target.result;
+      openDB().then(db => {
         const tx = db.transaction(STORE_NAME, "readwrite");
         const store = tx.objectStore(STORE_NAME);
-
         store.put(TEST_EMAIL, "email");
         store.put(TEST_TOKEN, "token");
-
         tx.oncomplete = () => {
-          document.getElementById("output").textContent = "✅ Saved:\n📧 Email: " + TEST_EMAIL + "\n🔐 Token: " + TEST_TOKEN;
+          document.getElementById("output").textContent = "✅ Data saved.";
         };
-      };
-
-      request.onerror = function() {
-        document.getElementById("output").textContent = "❌ Failed to save data.";
-      };
+      }).catch(err => {
+        document.getElementById("output").textContent = err;
+      });
     }
 
     function readFromIndexedDB() {
       document.getElementById("output").textContent = "⏳ Reading...";
-      const request = indexedDB.open(DB_NAME, 1);
-
-      request.onsuccess = function(event) {
-        const db = event.target.result;
+      openDB().then(db => {
         const tx = db.transaction(STORE_NAME, "readonly");
         const store = tx.objectStore(STORE_NAME);
+        
+        const getEmail = new Promise(resolve => {
+          const req = store.get("email");
+          req.onsuccess = () => resolve(req.result || null);
+        });
 
-        const emailReq = store.get("email");
-        const tokenReq = store.get("token");
+        const getToken = new Promise(resolve => {
+          const req = store.get("token");
+          req.onsuccess = () => resolve(req.result || null);
+        });
 
-        emailReq.onsuccess = () => {
-          const email = emailReq.result;
-          tokenReq.onsuccess = () => {
-            const token = tokenReq.result;
+        Promise.all([getEmail, getToken]).then(([email, token]) => {
+          if (email || token) {
             document.getElementById("output").textContent =
-              (email && token)
-                ? `📧 Email: ${email}\n🔐 Token: ${token}`
-                : "⚠️ Nothing found in storage.";
-          };
-        };
-      };
-
-      request.onerror = function() {
-        document.getElementById("output").textContent = "❌ Failed to read data.";
-      };
+              `📧 Email: ${email || "(not found)"}\n🔐 Token: ${token || "(not found)"}`;
+          } else {
+            document.getElementById("output").textContent = "⚠️ No data found in IndexedDB.";
+          }
+        });
+      }).catch(err => {
+        document.getElementById("output").textContent = err;
+      });
     }
 
     function clearIndexedDB() {
       document.getElementById("output").textContent = "⏳ Clearing...";
-      const deleteRequest = indexedDB.deleteDatabase(DB_NAME);
-      deleteRequest.onsuccess = () => {
-        document.getElementById("output").textContent = "🗑️ All data cleared.";
+      const request = indexedDB.deleteDatabase(DB_NAME);
+      request.onsuccess = () => {
+        document.getElementById("output").textContent = "🗑️ Database cleared.";
       };
-      deleteRequest.onerror = () => {
-        document.getElementById("output").textContent = "❌ Failed to clear data.";
+      request.onerror = () => {
+        document.getElementById("output").textContent = "❌ Failed to clear database.";
       };
     }
   </script>
