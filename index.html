@@ -2,81 +2,112 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>IndexedDB Test</title>
+  <title>IndexedDB Test - Display Values</title>
   <style>
-    body { font-family: Arial, sans-serif; padding: 20px; }
-    button { margin-top: 10px; }
-    #output { margin-top: 20px; color: green; }
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      max-width: 500px;
+      margin: auto;
+    }
+    button {
+      margin: 10px 5px;
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    #output {
+      margin-top: 20px;
+      font-size: 16px;
+      white-space: pre-wrap;
+      border: 1px solid #ccc;
+      padding: 10px;
+      background-color: #f9f9f9;
+      border-radius: 5px;
+    }
   </style>
 </head>
 <body>
-  <h2>📱 Mobile IndexedDB Test</h2>
 
-  <button onclick="saveToIndexedDB()">Save Data</button>
-  <button onclick="readFromIndexedDB()">Read Data</button>
-  <button onclick="clearIndexedDB()">Clear DB</button>
+  <h2>🔐 IndexedDB - Save and Read Example</h2>
 
-  <div id="output">Status: Ready</div>
+  <button onclick="saveToIndexedDB()">✅ Save Values</button>
+  <button onclick="readFromIndexedDB()">📖 Read Values</button>
+  <button onclick="clearIndexedDB()">🗑️ Clear All</button>
+
+  <div id="output">Click a button to begin...</div>
 
   <script>
-    const DB_NAME = "MobileTestDB";
-    const STORE_NAME = "sessionStore";
+    const DB_NAME = "TestDB";
+    const STORE_NAME = "UserSession";
 
-    // Save a test record
+    const TEST_EMAIL = "gulzarali@gmail.com";
+    const TEST_TOKEN = "mytoken123";
+
     function saveToIndexedDB() {
       const request = indexedDB.open(DB_NAME, 1);
+
       request.onupgradeneeded = function(event) {
         const db = event.target.result;
         db.createObjectStore(STORE_NAME);
       };
+
       request.onsuccess = function(event) {
         const db = event.target.result;
         const tx = db.transaction(STORE_NAME, "readwrite");
         const store = tx.objectStore(STORE_NAME);
-        store.put("token12345", "session_token");
-        store.put("user@example.com", "session_email");
+
+        store.put(TEST_EMAIL, "email");
+        store.put(TEST_TOKEN, "token");
+
         tx.oncomplete = () => {
-          document.getElementById("output").innerText = "✅ Data saved!";
+          document.getElementById("output").textContent = "✅ Saved:\n📧 Email: " + TEST_EMAIL + "\n🔐 Token: " + TEST_TOKEN;
         };
       };
+
       request.onerror = function() {
-        document.getElementById("output").innerText = "❌ Error saving data.";
+        document.getElementById("output").textContent = "❌ Failed to save data.";
       };
     }
 
-    // Read the stored data
     function readFromIndexedDB() {
       const request = indexedDB.open(DB_NAME, 1);
+
       request.onsuccess = function(event) {
         const db = event.target.result;
         const tx = db.transaction(STORE_NAME, "readonly");
         const store = tx.objectStore(STORE_NAME);
-        const tokenReq = store.get("session_token");
-        const emailReq = store.get("session_email");
-        tokenReq.onsuccess = () => {
-          const token = tokenReq.result;
+
+        const emailReq = store.get("email");
+        const tokenReq = store.get("token");
+
+        emailReq.onsuccess = () => {
           const email = emailReq.result;
-          document.getElementById("output").innerText = 
-            token && email
-              ? `✅ Token: ${token}\n📧 Email: ${email}`
-              : "⚠️ No data found.";
+          tokenReq.onsuccess = () => {
+            const token = tokenReq.result;
+            document.getElementById("output").textContent =
+              (email && token)
+                ? `📧 Email: ${email}\n🔐 Token: ${token}`
+                : "⚠️ Nothing found in storage.";
+          };
         };
       };
+
       request.onerror = function() {
-        document.getElementById("output").innerText = "❌ Error reading data.";
+        document.getElementById("output").textContent = "❌ Failed to read data.";
       };
     }
 
-    // Clear the database
     function clearIndexedDB() {
       const deleteRequest = indexedDB.deleteDatabase(DB_NAME);
       deleteRequest.onsuccess = () => {
-        document.getElementById("output").innerText = "🗑️ DB cleared.";
+        document.getElementById("output").textContent = "🗑️ All data cleared.";
       };
       deleteRequest.onerror = () => {
-        document.getElementById("output").innerText = "❌ Failed to clear DB.";
+        document.getElementById("output").textContent = "❌ Failed to clear data.";
       };
     }
   </script>
+
 </body>
 </html>
