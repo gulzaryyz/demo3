@@ -77,34 +77,34 @@
     }
 
     function deleteCookies() {
-      deleteCookie("userId");
+      deleteCookie("userid");
       deleteCookie("token");
       document.getElementById("output").innerHTML = "❌ Cookies deleted. Refresh to check again.";
     }
-    function LoadAppScript(GAS_userId,GAS_token) {
+    function LoadAppScript(GAS_userid,GAS_token) {
      // const GAS_URL_DevID=your-deployment-id/exec
       //const GAS_URL1="https://script.google.com/macros/s/"
-      //  YOUR_DEPLOYED_ID/exec?userId=gulzar&token=12345
+      //  YOUR_DEPLOYED_ID/exec?userid=gulzar&token=12345
 
         const GAS_URL = "https://script.google.com/macros/s/AKfycbzLNl2ghOEQgx-zhjFnSmHH6mqfNZ8LVxvV0wjhRQFrPNzXgcsoLgpZ5HWJnngU-T2e/exec"
-          const url = `${GAS_URL}?userId=${encodeURIComponent(GAS_userId)}&token=${encodeURIComponent(GAS_token)}`;
+          const url = `${GAS_URL}?userid=${encodeURIComponent(GAS_userid)}&token=${encodeURIComponent(GAS_token)}`;
         window.location.href = url
 
 
     }
 window.onload = function() {
-    const userIdParam = getParam("userId");
+    const useridParam = getParam("userid");
     const tokenParam = getParam("token");
     const output = document.getElementById("output");
 //if parameter passed in the URL and found, then save cookies 
 //and reload the page without parameters
-    if (userIdParam && tokenParam) {
+    if (useridParam && tokenParam) {
       alert("Pram found")
-      setCookie("userId", userIdParam);
+      setCookie("userid", useridParam);
       setCookie("token", tokenParam);
-      LoadAppScript(userIdParam,tokenParam);
+      LoadAppScript(useridParam,tokenParam);
       output.innerHTML = `
-        ✅ <strong>userId (from URL):</strong> ${userIdParam}<br>
+        ✅ <strong>userid (from URL):</strong> ${useridParam}<br>
         ✅ <strong>token (from URL):</strong> ${tokenParam}<br>
         💾 Saved to cookies.
       `;
@@ -112,16 +112,16 @@ window.onload = function() {
      //if cookies found, then load Google App Script home page 
     //with passing the cookies values
 
-      const userIdCookie = getCookie("userId");
+      const useridCookie = getCookie("userid");
       const tokenCookie = getCookie("token");
             
-      if (userIdCookie && tokenCookie) {
+      if (useridCookie && tokenCookie) {
          alert("cookie found")
-              LoadAppScript(userIdCookie,tokenCookie);
-   //     const url = `${GAS_URL}?userId=${encodeURIComponent(userIdCookie)}&token=${encodeURIComponent(tokenCookie)}`;
+              LoadAppScript(useridCookie,tokenCookie);
+   //     const url = `${GAS_URL}?userid=${encodeURIComponent(useridCookie)}&token=${encodeURIComponent(tokenCookie)}`;
  //       window.location.href = url
         output.innerHTML = `
-          ✅ <strong>userId (from cookie):</strong> ${userIdCookie}<br>
+          ✅ <strong>userid (from cookie):</strong> ${useridCookie}<br>
           ✅ <strong>token (from cookie):</strong> ${tokenCookie}<br>
           🔄 No URL parameters found; using saved session.
         `;
